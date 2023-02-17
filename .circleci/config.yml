@@ -1,9 +1,35 @@
 version: 2.1
-           
+
+commands:
+  destroy-environment:
+    description: Destory backend / frontend cloudformation  & s3 bucket on fail
+    parameters:
+      workflow_id:
+        type: string
+    steps:
+      - run:
+          name: Destory environments
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack udapeople-backend-<< parameters.workflow_id >>
+            aws cloudformation delete-stack udapeople-frontend-<< parameters.workflow_id >>
+            aws s3 rm s3://udapeople-<< parameters.workflow_id >> --recursive
+
+node-docker-image: &node-docker-image
+   docker:
+      - image: circleci/node:13.8.0
+
+aws-docker-image: &aws-docker-image
+   docker:
+      - image: cimg/aws:2023.01
+
+ansible-docker-image: &ansible-docker-image
+   docker:
+      - image: cimg/deploy:2022.11.1
+
 jobs:
   build-frontend:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *node-docker-image
     steps:
       - checkout
       - restore_cache:
@@ -20,8 +46,7 @@ jobs:
           key: frontend-build
 
   build-backend:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *node-docker-image
     steps:
       - checkout
       - restore_cache:
@@ -38,8 +63,7 @@ jobs:
           key: backend-build
   
   test-frontend:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *node-docker-image
     steps:
       - checkout
       # Restore from cache
@@ -53,8 +77,7 @@ jobs:
             npm run test
 
   test-backend:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *node-docker-image
     steps:
       - checkout
       # Restore from cache
@@ -68,8 +91,7 @@ jobs:
             npm run test
 
   scan-frontend:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *node-docker-image
     steps:
       - checkout
       - restore_cache:
@@ -84,8 +106,7 @@ jobs:
           #  npm audit --audit-level=critical
 
   scan-backend:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *node-docker-image
     steps:
       - checkout
       - restore_cache:
@@ -98,6 +119,43 @@ jobs:
             # npm install oauth-sign@^0.9.0
             npm audit fix --audit-level=critical --force
           #  npm audit --audit-level=critical
+
+  deploy-infrastructure:
+    <<: *aws-docker-image
+    steps:
+      - checkout
+      - run: yum install -y tar gzip
+      - run:
+          name: Ensure back-end infrastructure exists
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/backend.yml \
+              --tags udapeople \
+              --stack-name "udapeople-backend-${CIRCLE-WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE-WORKFLOW_ID:0:7}" 
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --tags project=udapeople \
+              --stack-name "udapeople-frontend-${CIRCLE-WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE-WORKFLOW_ID:0:7}"  
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            # Query EC2 instances in the backend using the workflowID and export the IP address to ansible/inventory
+            aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE-WORKFLOW_ID:0:7}" \
+              --query "Reservations[*].Instances[*].PublicDnsName" \
+              --output text >> .circleci/ansible/inventory.txt
+            echo `cat .circleci/ansible/inventory.txt`
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
 
 workflows:
