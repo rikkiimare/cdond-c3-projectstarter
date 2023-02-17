@@ -246,9 +246,7 @@ jobs:
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}"
-            echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
+            echo "API_URL=http://${BACKEND_IP}:3030" >> frontend/.env
             cat frontend/.env
       - run:
           name: Deploy frontend objects
@@ -276,7 +274,8 @@ jobs:
             sudo apt-get update
             sudo apt install python3 -y
             sudo apt-get install ansible -y
-            sudo apt-get install aws-cli
+            sudo apt install nodejs
+            sudo apt install npm
       - run:
           name: Zip backend
           command: |
