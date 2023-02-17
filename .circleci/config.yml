@@ -228,7 +228,7 @@ jobs:
             then
                 echo "success"
                 # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
-                curl https://kvdb.io/NQPRJiBSzdTi7ntfUHNfwz/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+                curl --insecure https://kvdb.io/NQPRJiBSzdTi7ntfUHNfwz/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi
       # - destroy-environment:
       #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
