@@ -183,7 +183,7 @@ jobs:
   configure-infrastructure:
     <<: *ansible-docker-image
     steps:
-      -checkout
+      - checkout
       - add_ssh_keys:
           fingerprints: 
             - "df:d4:27:43:6f:dc:01:ea:99:ec:ab:03:34:a3:60:38"
