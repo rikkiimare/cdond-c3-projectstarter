@@ -198,7 +198,7 @@ jobs:
           name: Configure server
           command: |
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
-      - destroy-environment
+      - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}   
 
   run-migrations:
@@ -228,7 +228,7 @@ jobs:
                 # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
                 curl https://kvdb.io/NQPRJiBSzdTi7ntfUHNfwz/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi
-      - destroy-environment
+      - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
 
   deploy-frontend:
@@ -256,8 +256,9 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
-      - destroy-environment
+      - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
+
 
   deploy-backend:
     <<: *node-docker-image
@@ -292,9 +293,9 @@ jobs:
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
-      - destroy-environment
+      - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
-      - revert-migrations
+      - revert-migrations:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
                     
 
@@ -316,3 +317,11 @@ workflows:
           # filters:
           #   branches:
           #     only: [test-feature-branch]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
