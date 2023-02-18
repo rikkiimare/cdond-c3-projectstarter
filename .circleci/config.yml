@@ -39,7 +39,7 @@ commands:
 node-docker-image: &node-docker-image
    docker:
       #- image: circleci/node:13.8.0
-      - image: circleci/node:19.6.1
+      - image: cimg/node:19.6.1
 
 aws-docker-image: &aws-docker-image
    docker:
