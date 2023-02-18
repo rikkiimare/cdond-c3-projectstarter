@@ -38,7 +38,8 @@ commands:
 
 node-docker-image: &node-docker-image
    docker:
-      - image: circleci/node:13.8.0
+      #- image: circleci/node:13.8.0
+      - image: circleci/node:19.6.1
 
 aws-docker-image: &aws-docker-image
    docker:
@@ -295,7 +296,8 @@ jobs:
           command: |
             # Zip the directory
             tar -zcvf artifact.tar.gz ~/project/backend
-            cp ~/project/artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/files
+            cp ~/project/artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/artifact.tar.gz
+            ls ~/project/.circleci/ansible/roles/deploy/
       - run:
           name: Deploy backend
           command: |
