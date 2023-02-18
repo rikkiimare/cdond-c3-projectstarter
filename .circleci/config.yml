@@ -247,13 +247,13 @@ jobs:
           name: Get backend url
           command: |
             export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
-            export API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
-            echo "API_URL = ${API_URL}
-            cat frontend/.env
+            export API_URL="http://${BACKEND_IP}:3030" >> ~/project/frontend/.env
+            echo "API_URL = ${API_URL}"
+            cat ~/project/frontend/.env
       - run:
           name: Deploy frontend objects
           command: |
-            cd frontend
+            cd ~/project/frontend
             npm update
             npm run build
       - run:
@@ -293,15 +293,16 @@ jobs:
           name: Zip backend
           command: |
             # Zip the directory
+            cd ~/project/backend
             tar -czvf artifact.tar.gz .
-            cp artifact.tar.gz .circleci/ansible/roles/deploy/files
+            cp artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/files
       - run:
           name: Deploy backend
           command: |
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
-            ansible-playbook -i inventory.txt deploy-backend.yml
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml
       # - destroy-environment:
       #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
       # - revert-migrations:
