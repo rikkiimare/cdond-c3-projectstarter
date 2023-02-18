@@ -247,23 +247,24 @@ jobs:
           name: Get backend url
           command: |
             export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
-            export API_URL="http://${BACKEND_IP}:3030" >> ~/project/frontend/.env
+            export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
+            echo API_URL="http://${BACKEND_IP}:3030" >> ~/project/frontend/.env
             cat ~/project/frontend/.env
       - run:
           name: Deploy frontend objects
           command: |
             cd ~/project/frontend
-            npm update
+
             npm run build
       - run:
           name: tar frontend
           command:
-            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz ~/project/frontend/dist
       - run:
           name: aws s3 copy
           command:
-            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+            aws s3 cp ~/project/frontend/dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       # - destroy-environment:
       ##     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
 
@@ -293,13 +294,12 @@ jobs:
           name: Zip backend
           command: |
             # Zip the directory
-            cd ~/project/backend
-            tar -czvf artifact.tar.gz .
-            cp artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/files
+            tar -zcvf artifact.tar.gz ~/project/backend
+            cp ~/project/artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/files
       - run:
           name: Deploy backend
           command: |
-            cd .circleci/ansible
+            cd ~/project/.circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml
