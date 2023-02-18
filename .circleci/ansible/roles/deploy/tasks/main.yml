@@ -15,6 +15,10 @@
     cd ~/backend-app
     npm i
 
+- name: extract files
+  shell: |
+    tar xfz artifact.tar.gz --directory ~/backend-app
+
 - name: "Executing Node app with PM2"
   shell: |
     cd ~/backend-app/dist
