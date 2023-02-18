@@ -255,7 +255,7 @@ jobs:
           name: Deploy frontend objects
           command: |
             cd ~/project/frontend
-
+            npm install
             npm run build
       - run:
           name: tar frontend
