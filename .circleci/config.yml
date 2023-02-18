@@ -216,10 +216,13 @@ jobs:
           command: |
             sudo apt-get install awscli
       - run:
-          name: Run migrations
+          name: Install npm
           command: |
             cd backend
             npm install
+      - run:
+          name: Run migrations
+          command:
             npm run migrations > migrations_dump.txt
       - run:
           name: Send migration results to kvdb.io
@@ -240,11 +243,15 @@ jobs:
       - restore_cache:
           keys: [frontend-build]
       - run:
-          name: Get backend url
+          name: echo circle_workflow_id
           command: |
             echo ${CIRCLE_WORKFLOW_ID}
+      - run:
+          name: Get backend url
+          command: |
             export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
-            echo "API_URL=http://${BACKEND_IP}:3030" >> frontend/.env
+            export API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
+            echo "API_URL = ${API_URL}
             cat frontend/.env
       - run:
           name: Deploy frontend objects
@@ -252,7 +259,13 @@ jobs:
             cd frontend
             npm update
             npm run build
+      - run:
+          name: tar frontend
+          command:
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+      - run:
+          name: aws s3 copy
+          command:
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       # - destroy-environment:
       ##     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
@@ -282,10 +295,9 @@ jobs:
       - run:
           name: Zip backend
           command: |
-            cd ..
             # Zip the directory
-            tar -C backend -czvf artifact.tar.gz .
-            cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
+            tar -czvf artifact.tar.gz .
+            cp artifact.tar.gz .circleci/ansible/roles/deploy/files
       - run:
           name: Deploy backend
           command: |
