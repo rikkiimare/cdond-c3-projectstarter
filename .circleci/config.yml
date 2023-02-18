@@ -259,8 +259,7 @@ jobs:
           name: Deploy frontend objects
           command: |
             cd ~/project/frontend
-            npm uninstall
-            npm install
+            export NODE_OPTIONS=--openssl-legacy-provider
             npm run build
       - run:
           name: tar frontend
