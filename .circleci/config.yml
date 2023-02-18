@@ -259,7 +259,7 @@ jobs:
           name: Deploy frontend objects
           command: |
             cd ~/project/frontend
-            npm install standard-package --save-dev
+            npm install
             npm update
             npm run build
       - run:
