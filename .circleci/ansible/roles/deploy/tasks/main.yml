@@ -1,36 +1,27 @@
 ---
 
-- name: print environment variables
-  shell: |
-    printenv
-  register: print_result
-
-- name: log environment variables
-  debug:
-    msg: "{{ print_result.stdout_lines }}"
-
 - name: "Creates backend app directory"
   file:
-    path: ~/backend-app
+    path: ~/backend
     state: directory
 
 - name: "Unarchive backend files"
   unarchive:
     src: artifact.tar.gz
-    dest: ~/backend-app
+    dest: ~/backend
 
 - name: "Installing Node Dependencies"
   shell: |
-    cd ~/backend-app
+    cd ~/backend
     npm i
 
 - name: "Executing Node app with PM2"
   shell: |
-    cd ~/backend-app
+    cd ~/backend
     pm2 stop default
     #pm2 start main.js
     pm2 start npm -- start
-  register: print_result
+  register: exe_node_app
 
 # - name: "Configure pm2 to start as service"
 #   shell: |
@@ -39,4 +30,4 @@
 
 - name: log Executing node
   debug:
-    msg: "{{ print_result.stdout_lines }}"
+    msg: "{{ exe_node_app.stdout_lines }}"
