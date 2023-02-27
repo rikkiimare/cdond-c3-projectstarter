@@ -312,7 +312,48 @@ jobs:
       #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
       # - revert-migrations:
       #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
-                    
+
+  smoke-test:
+    <<: *aws-docker-image
+    steps:
+      - checkout # Checkout code from git
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt install nodejs
+            npm install
+      - run:
+          name: Get backend url
+          command: |
+            export BACKEND_IP=$(aws ec2 describe-instances --region=us-east-1 \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text)
+      - run:
+          name: Backend smoke test.
+          command: |
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo $API_URL
+            if curl --connect-timeout 5 "${API_URL}/api/status" | grep "ok";
+            then
+              exit 0;
+            else
+              exit 1;
+            fi
+      - run:
+          name: Frontend smoke test.
+          command: |
+            export URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employees"
+            if curl -s ${URL} | grep "Welcome"
+            then
+              return 1
+            else
+              return 1
+            fi
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}                     
 
 workflows:
   default:
@@ -340,3 +381,5 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations]
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
