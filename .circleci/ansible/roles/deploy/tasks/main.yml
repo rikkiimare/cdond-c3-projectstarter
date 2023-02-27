@@ -4,8 +4,8 @@
   shell: |
     printenv
   register: env_vars
-  
-  - name: "Creates backend app directory"
+
+- name: "Creates backend app directory"
   file:
     path: ~/backend
     state: directory
