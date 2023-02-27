@@ -302,9 +302,6 @@ jobs:
             echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> ".env"
             npm install
             npm run build
-      # - run:
-      #     name: Zip backend
-      #     command: |
             # Zip the directory
             cd .. # NEW LINE
             pwd
@@ -312,9 +309,6 @@ jobs:
             tar -C backend -zcvf artifact.tar.gz .
             # cp ~/project/artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/artifact.tar.gz 
             # ls ~/project/.circleci/ansible/roles/deploy/
-      # - run:
-      #     name: Deploy backend
-      #     command: |
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
