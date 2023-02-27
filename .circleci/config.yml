@@ -314,14 +314,14 @@ jobs:
       #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
 
   smoke-test:
-    <<: *aws-docker-image
+    <<: *node-docker-image
     steps:
       - checkout # Checkout code from git
       - run:
           name: Install dependencies
           command: |
-            sudo apt install nodejs
-            npm install
+            sudo apt-get update
+            sudo apt-get install awscli
       - run:
           name: Get backend url
           command: |
