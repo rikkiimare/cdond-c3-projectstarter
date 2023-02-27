@@ -1,6 +1,11 @@
 ---
 
-- name: "Creates backend app directory"
+- name: print env vars
+  shell: |
+    printenv
+  register: env_vars
+  
+  - name: "Creates backend app directory"
   file:
     path: ~/backend
     state: directory
@@ -13,8 +18,10 @@
 - name: "Install dependancies"
   become: true
   shell: |
-    curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
-    apt-get install -y nodejs
+    apt-get clean
+    apt-get update
+    curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    sudo n stable
     apt-get install gcc g++ make -y
     npm install -g npm
     npm install -g pm2
@@ -59,13 +66,13 @@
   shell: |
     cd ~/backend/home/circleci/project/backend
     npm i
-    mpn audit fix
+    npm audit fix -f
 
 - name: "Executing Node app with PM2"
   become: true
   shell: |
     cd ~/backend/home/circleci/project/backend
-    pm2 stop default
+    #pm2 stop default
     #pm2 start main.js
     pm2 start npm -- run start
   register: exe_node_app
