@@ -10,14 +10,14 @@
     src: artifact.tar.gz
     dest: /home/ubuntu/backend
 
-# - name: "Install dependancies"
-#   become: true
-#   shell: |
-#     curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
-#     apt-get install -y nodejs
-#     apt-get install gcc g++ make -y
-#     npm install -g npm
-#     npm install -g pm2
+- name: "Install dependancies"
+  become: true
+  shell: |
+    curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+    apt-get install -y nodejs
+    apt-get install gcc g++ make -y
+    npm install -g npm
+    npm install -g pm2
 #     #
 #     #
 
@@ -57,16 +57,17 @@
 - name: "Installing Node Dependencies"
   become: true
   shell: |
-    cd ~/backend
+    cd ~/backend/home/circleci/project/backend
     npm i
+    mpn audit fix
 
 - name: "Executing Node app with PM2"
   become: true
   shell: |
-    cd ~/backend
+    cd ~/backend/home/circleci/project/backend
     pm2 stop default
     #pm2 start main.js
-    pm2 start npm -- start
+    pm2 start npm -- run start
   register: exe_node_app
 
 - name: "Configure pm2 to start as service"
