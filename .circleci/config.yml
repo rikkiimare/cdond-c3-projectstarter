@@ -311,7 +311,7 @@ jobs:
             cp ~/project/artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/artifact.tar.gz 
             ls ~/project/.circleci/ansible/roles/deploy/
       - run:
-          name: Zip backend
+          name: Run ansible playbook
           command: |
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
