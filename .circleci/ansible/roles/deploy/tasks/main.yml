@@ -4,7 +4,7 @@
   file:
     path: ~/app
     state: directory
-    mode: 0777
+    mode: '0777'
 
 - name: "Unarchive backend files"
   unarchive:
