@@ -237,7 +237,7 @@ jobs:
       - run:
           name: Run migrations
           command: |
-            cat backend/.env
+            cat project/backend/.env
             cd project/backend
             npm install
             npm run build
