@@ -214,9 +214,9 @@ jobs:
             cat backend/.env
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
       - persist_to_workspace:
-        root: ~/
-        paths:
-          - project/backend/.env
+          root: ~/
+          paths:
+            - project/backend/.env
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}   
 
