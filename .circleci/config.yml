@@ -308,6 +308,7 @@ jobs:
             # Zip the directory
             pwd
             tar -zcvf artifact.tar.gz ~/project/backend/*
+            #tar -C backend -cvzf artifact.tar.gz .
             cp ~/project/artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/artifact.tar.gz 
             ls ~/project/.circleci/ansible/roles/deploy/
       - run:
@@ -317,7 +318,7 @@ jobs:
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml -u ubuntu -c ssh
       # - destroy-environment:
       #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
       # - revert-migrations:
