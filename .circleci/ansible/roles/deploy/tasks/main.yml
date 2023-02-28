@@ -1,27 +1,51 @@
 ---
 
-- name: "Creates backend app directory"
-  file:
-    path: ~/app
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: ~/app 
     state: directory
     mode: '0777'
 
-- name: "Unarchive backend files"
-  unarchive:
-    src: artifact.tar.gz
-    dest: ~/app/
+- name: Another symbolic mode example, adding some permissions and removing others
+  ansible.builtin.copy:
+    src: ~/project/artifact.tar.gz
+    dest: ~/app/artifact.tar.gz
 
-- name: "Install dependancies"
-  become: true
+- name: Unarchive a file that is already on the remote machine
+  ansible.builtin.unarchive:
+    src: ~/app/artifact.tar.gz
+    dest: ~/app/
+    remote_src: yes
+
+- name: run the backend
   shell: |
-    cd ~/app
-    apt-get clean
-    apt-get update
-    curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    sudo n stable
-    apt-get install gcc g++ make -y
-    npm install -g npm
-    npm install -g pm2
+    cd ~/app/
+    sudo npm install 
+    sudo pm2 stop default
+    pm2 start npm -- start
+    
+# - name: "Creates backend app directory"
+#   file:
+#     path: ~/app
+#     state: directory
+#     mode: '0777'
+
+# - name: "Unarchive backend files"
+#   unarchive:
+#     src: artifact.tar.gz
+#     dest: ~/app/
+
+# - name: "Install dependancies"
+#   become: true
+#   shell: |
+#     cd ~/app
+#     apt-get clean
+#     apt-get update
+#     curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+#     sudo n stable
+#     apt-get install gcc g++ make -y
+#     npm install -g npm
+#     npm install -g pm2
 #     #
 #     #
 
@@ -41,32 +65,32 @@
 #     pm2 start npm -- run start
 #   register: exe_node_app
 
-- name: "Installing Node Dependencies"
-  become: true
-  shell: |
-    cd ~/app
-    npm i
-    npm audit fix -f
+# - name: "Installing Node Dependencies"
+#   become: true
+#   shell: |
+#     cd ~/app
+#     npm i
+#     npm audit fix -f
 
-- name: "Executing Node app with PM2"
-  become: true
-  shell: |
-    cd ~/app
-    #pm2 stop default
-    #pm2 start main.js
-    pm2 start npm -- run start
-  environment:
-    ENVIRONMENT: production
-    NODE_ENV: production
-    TYPEORM_CONNECTION: postgres
-    TYPEORM_MIGRATIONS_DIR: ~/src/migrations
-    TYPEORM_MIGRATIONS: ~/src/migrations/*.ts
-    TYPEORM_ENTITIES: ~/src/modules/domain/**/*.entity.ts
-    TYPEORM_HOST: database-ric.cwzausiamzmt.us-east-1.rds.amazonaws.com
-    TYPEORM_PORT: 5432
-    TYPEORM_USERNAME: postgres
-    TYPEORM_PASSWORD: mypasswordmy
-    TYPEORM_DATABASE: postgres  
+# - name: "Executing Node app with PM2"
+#   become: true
+#   shell: |
+#     cd ~/app
+#     #pm2 stop default
+#     #pm2 start main.js
+#     pm2 start npm -- run start
+#   environment:
+#     ENVIRONMENT: production
+#     NODE_ENV: production
+#     TYPEORM_CONNECTION: postgres
+#     TYPEORM_MIGRATIONS_DIR: ~/src/migrations
+#     TYPEORM_MIGRATIONS: ~/src/migrations/*.ts
+#     TYPEORM_ENTITIES: ~/src/modules/domain/**/*.entity.ts
+#     TYPEORM_HOST: database-ric.cwzausiamzmt.us-east-1.rds.amazonaws.com
+#     TYPEORM_PORT: 5432
+#     TYPEORM_USERNAME: postgres
+#     TYPEORM_PASSWORD: mypasswordmy
+#     TYPEORM_DATABASE: postgres  
 
 # - name: "Configure pm2 to start as service"
 #   become: true
