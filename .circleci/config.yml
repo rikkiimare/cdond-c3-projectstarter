@@ -50,7 +50,7 @@ ansible-docker-image: &ansible-docker-image
 
 alpine-docker-image: &alpine-docker-image
    docker:
-      - image: python3.7-alpine3.11
+      - image: python3.10.0-alpine
 
 jobs:
   build-frontend:
@@ -342,7 +342,7 @@ jobs:
       #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
 
   smoke-test:
-    <<: *node-docker-image
+    <<: *aws-docker-image
     steps:
       - checkout # Checkout code from git
       - run:
