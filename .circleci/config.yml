@@ -299,7 +299,7 @@ jobs:
       ##     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
 
   deploy-backend:
-    <<: *alpine-docker-image
+    <<: *aws-docker-image
     steps:
       - checkout
       - add_ssh_keys:
@@ -312,7 +312,6 @@ jobs:
           command: |
             apk add --update ansible
             sudo apt install nodejs
-            pip install awscli
       - run:
           name: npm cmds backend
           command: |
@@ -342,7 +341,7 @@ jobs:
       #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
 
   smoke-test:
-    <<: *aws-docker-image
+    <<: *node-docker-image
     steps:
       - checkout # Checkout code from git
       - run:
