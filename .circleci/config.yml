@@ -310,7 +310,9 @@ jobs:
       - run:
           name: Run Install dependencies
           command: |
-            apk add --update ansible
+            sudo apt-get update
+            sudo apt install python3 -y
+            sudo apt-get install ansible -y
             sudo apt install nodejs
       - run:
           name: npm cmds backend
