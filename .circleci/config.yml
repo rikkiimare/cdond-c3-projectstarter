@@ -225,10 +225,10 @@ jobs:
     <<: *node-docker-image
     steps:
       - checkout
-      - attach_workspace:
-          at: ~/
       - restore_cache:
           keys: [backend-build]
+      - attach_workspace:
+          at: ~/
       - run: 
           name: update apt-get
           command: |
