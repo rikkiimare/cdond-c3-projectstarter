@@ -358,55 +358,6 @@ jobs:
       # - revert-migrations:
       #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
 
-  # deploy-backend:
-  #   <<: *aws-docker-image
-  #   steps:
-  #     - checkout
-  #     - add_ssh_keys:
-  #         fingerprints: 
-  #           - "df:d4:27:43:6f:dc:01:ea:99:ec:ab:03:34:a3:60:38"
-  #     - attach_workspace:
-  #         at: ~/
-  #     - restore_cache:
-  #         keys: [backend-build]
-  #     - run:
-  #         name: Run Install dependencies
-  #         command: |
-  #           sudo apt-get update
-  #           sudo apt install python3 -y
-  #           sudo apt-get install ansible -y
-  #           sudo apt install nodejs
-  #     - run:
-  #         name: npm cmds backend
-  #         command: |
-  #           cd backend
-  #           npm install
-  #           npm run build
-  #     - run:
-  #         name: Zip backend
-  #         command: |
-  #           # Zip the directory
-  #           pwd
-  #           tar -zcvf artifact.tar.gz ~/project/backend/*
-  #           #tar -C backend -cvzf artifact.tar.gz .
-  #           cp ~/project/artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/artifact.tar.gz 
-  #           ls ~/project/.circleci/ansible/roles/deploy/
-  #     - run:
-  #         name: Run ansible playbook
-  #         command: |
-  #           export TYPEORM_MIGRATIONS_DIR=./migrations
-  #           export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
-  #           export TYPEORM_MIGRATIONS=./migrations/*.ts
-  #           cd .circleci/ansible
-  #           echo "Contents  of the inventory.txt file is -------"
-  #           cat inventory.txt
-  #           export ANSIBLE_HOST_KEY_CHECKING=False
-  #           ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml
-  #     # - destroy-environment:
-  #     #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
-  #     # - revert-migrations:
-  #     #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
-
   smoke-test:
     <<: *node-docker-image
     steps:
@@ -427,9 +378,9 @@ jobs:
             echo $API_URL
             if curl --connect-timeout 5 "${API_URL}/api/status" | grep "ok"
             then
-              return 0
+              exit 0
             else
-              return 1
+              exit 1
             fi
       - run:
           name: Frontend smoke test.

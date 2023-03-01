@@ -1,133 +1,27 @@
 ---
 
-- name: "Creates backend app directory"
-  file:
-    path: ~/backend-app
+- name: create directory 
+  become: true
+  file: 
+    path: /home/ubuntu/web
     state: directory
+    mode: 0755
 
-- name: "Unarchive backend files"
-  unarchive:
-    src: artifact.tar.gz
-    dest: "/home/ubuntu/backend-app"
+- name: copy artifact
+  become: true
+  copy: 
+    src: ~/project/artifact.tar.gz
+    dest: /home/ubuntu/web/artifact.tar.gz
 
-- name: "Installing Node Dependencies"
+- name: Extract artifact files
   become: true
   shell: |
-    curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    sudo n stable
-    apt-get install gcc g++ make -y
-    npm install -g npm
-    npm install -g pm2
+    cd /home/ubuntu/web
+    tar -xvf artifact.tar.gz
     
-- name: "Start backend"
+- name: Executing node
+  become: true
   shell: |
-    /usr/local/bin/pm2 start /home/ubuntu/backend-app/dist/main.js --name backend -f
-  environment:
-    ENVIRONMENT: production
-    NODE_ENV: production
-    TYPEORM_CONNECTION: postgres
-    TYPEORM_MIGRATIONS_DIR: ~/src/migrations
-    TYPEORM_MIGRATIONS: ~/src/migrations/*.ts
-    TYPEORM_ENTITIES: ~/src/modules/domain/**/*.entity.ts
-    TYPEORM_HOST: database-1.cwzausiamzmt.us-east-1.rds.amazonaws.com
-    TYPEORM_PORT: 5432
-    TYPEORM_USERNAME: postgres
-    TYPEORM_PASSWORD: password
-    TYPEORM_DATABASE: postgres    
-
-# - name: print message
-#   debug:
-#     msg: "{{ execute_node.stdout_lines }}"
-
-# - name: "Configure pm2 to start as service"
-#   shell: |
-#     sudo su -c "env PATH=$PATH:/usr/local/bin pm2 startup systemd -u ubuntu --hp /home/ubuntu"
-#     pm2 save
-
-# - name: "Creates backend app directory"
-#   file:
-#     path: ~/app
-#     state: directory
-#     mode: '0777'
-
-# - name: "Unarchive backend files"
-#   unarchive:
-#     src: artifact.tar.gz
-#     dest: ~/app/
-
-# - name: "Install dependancies"
-#   become: true
-#   shell: |
-#     cd ~/app
-#     apt-get clean
-#     apt-get update
-#     curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-#     sudo n stable
-#     apt-get install gcc g++ make -y
-#     npm install -g npm
-#     npm install -g pm2
-#     #
-#     #
-
-# - name: "Installing Node Dependencies"
-#   become: true
-#   apt: 
-#     name: ["nodejs", "npm"]
-#     state: present
-#     update_cache: yes
-
-# - name: "Executing Node app with PM2"
-#   become: true
-#   shell: |
-#     cd ~/backend
-#     npm i
-#     pm2 stop default
-#     pm2 start npm -- run start
-#   register: exe_node_app
-
-# - name: "Installing Node Dependencies"
-#   become: true
-#   shell: |
-#     cd ~/app
-#     npm i
-#     npm audit fix -f
-
-# - name: "Executing Node app with PM2"
-#   become: true
-#   shell: |
-#     cd ~/app
-#     #pm2 stop default
-#     #pm2 start main.js
-#     pm2 start npm -- run start
-#   environment:
-#     ENVIRONMENT: production
-#     NODE_ENV: production
-#     TYPEORM_CONNECTION: postgres
-#     TYPEORM_MIGRATIONS_DIR: ~/src/migrations
-#     TYPEORM_MIGRATIONS: ~/src/migrations/*.ts
-#     TYPEORM_ENTITIES: ~/src/modules/domain/**/*.entity.ts
-#     TYPEORM_HOST: database-ric.cwzausiamzmt.us-east-1.rds.amazonaws.com
-#     TYPEORM_PORT: 5432
-#     TYPEORM_USERNAME: postgres
-#     TYPEORM_PASSWORD: mypasswordmy
-#     TYPEORM_DATABASE: postgres  
-
-# - name: "Configure pm2 to start as service"
-#   become: true
-#   shell: |
-#     cd ~/app/home/circleci/project/backend
-#     sudo su -c "env PATH=$PATH:/usr/local/bin pm2 startup systemd -u ubuntu --hp ~/app/home/circleci/project/backend"
-#     pm2 save
-#   environment:
-#     ENVIRONMENT: production
-#     NODE_ENV: production
-#     TYPEORM_CONNECTION: postgres
-#     TYPEORM_MIGRATIONS_DIR: ~/src/migrations
-#     TYPEORM_MIGRATIONS: ~/src/migrations/*.ts
-#     TYPEORM_ENTITIES: ~/src/modules/domain/**/*.entity.ts
-#     TYPEORM_HOST: database-ric.cwzausiamzmt.us-east-1.rds.amazonaws.com
-#     TYPEORM_PORT: 5432
-#     TYPEORM_USERNAME: postgres
-#     TYPEORM_PASSWORD: mypasswordmy
-#     TYPEORM_DATABASE: postgres  
-
+    cd /home/ubuntu/web
+    pm2 stop default
+    pm2 start npm -- start
