@@ -8,28 +8,41 @@
 - name: "Unarchive backend files"
   unarchive:
     src: artifact.tar.gz
-    dest: ~/backend-app
+    dest: "/home/ubuntu/backend-app"
 
 - name: "Installing Node Dependencies"
+  become: true
   shell: |
-    cd ~/backend-app
-    npm i
-
-- name: "Executing Node app with PM2"
+    curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    sudo n stable
+    apt-get install gcc g++ make -y
+    npm install -g npm
+    npm install -g pm2
+    
+- name: "Start backend"
   shell: |
-    cd ~/backend-app/home/circleci/project/backend/dist
-    pm2 stop default
-    pm2 start main.js
-  register: execute_node
+    /usr/bin/pm2 start /home/ubuntu/backend-app/dist/main.js --name backend -f
+  environment:
+    ENVIRONMENT: production
+    NODE_ENV: production
+    TYPEORM_CONNECTION: postgres
+    TYPEORM_MIGRATIONS_DIR: ~/src/migrations
+    TYPEORM_MIGRATIONS: ~/src/migrations/*.ts
+    TYPEORM_ENTITIES: ~/src/modules/domain/**/*.entity.ts
+    TYPEORM_HOST: database-1.cwzausiamzmt.us-east-1.rds.amazonaws.com
+    TYPEORM_PORT: 5432
+    TYPEORM_USERNAME: postgres
+    TYPEORM_PASSWORD: password
+    TYPEORM_DATABASE: postgres    
 
-- name: print message
-  debug:
-    msg: "{{ execute_node.stdout_lines }}"
+# - name: print message
+#   debug:
+#     msg: "{{ execute_node.stdout_lines }}"
 
-- name: "Configure pm2 to start as service"
-  shell: |
-    sudo su -c "env PATH=$PATH:/usr/local/bin pm2 startup systemd -u ubuntu --hp /home/ubuntu"
-    pm2 save
+# - name: "Configure pm2 to start as service"
+#   shell: |
+#     sudo su -c "env PATH=$PATH:/usr/local/bin pm2 startup systemd -u ubuntu --hp /home/ubuntu"
+#     pm2 save
 
 # - name: "Creates backend app directory"
 #   file:
