@@ -18,6 +18,7 @@
     apt-get install gcc g++ make -y
     npm install -g npm
     npm install -g pm2
+    npm run start
     
 - name: "Start backend"
   shell: |
