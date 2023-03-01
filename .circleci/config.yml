@@ -300,7 +300,9 @@ jobs:
       ##     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
 
   deploy-backend:
-    <<: *aws-docker-image
+    # <<: *aws-docker-image
+    docker:
+      - image: python:3.11-rc-alpine
     steps:
       - checkout
       - add_ssh_keys:
@@ -308,43 +310,101 @@ jobs:
             - "df:d4:27:43:6f:dc:01:ea:99:ec:ab:03:34:a3:60:38"
       - attach_workspace:
           at: ~/
+      - restore_cache:
+          keys: [backend-build]
       - run:
           name: Run Install dependencies
           command: |
-            sudo apt-get update
-            sudo apt install python3 -y
-            sudo apt-get install ansible -y
-            sudo apt install nodejs
+            apk add --update tar gzip ansible nodejs npm curl
+            pip3 install --upgrade pip
+            pip3 install awscli
+      - run: 
+          name: Save all db varibles in env file 
+          command: |
+            ls
+            cd backend
+            echo ENVIRONMENT=production >> .env
+            echo NODE_ENV=production >> .env
+            echo TYPEORM_HOST=$TYPEORM_HOST >> .env
+            echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> .env
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> .env
+            echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> .env
+            echo TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS >> .env
+            echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> .env
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> .env
+            echo TYPEORM_PORT=$TYPEORM_PORT >> .env
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> .env
+            cat .env
+            ls
       - run:
-          name: npm cmds backend
+          name: Package backend
           command: |
             cd backend
             npm install
             npm run build
+            cd ..
+            tar -C backend -czvf artifact.tar.gz .
       - run:
-          name: Zip backend
+          name: Deploy backend
           command: |
-            # Zip the directory
-            pwd
-            tar -zcvf artifact.tar.gz ~/project/backend/*
-            #tar -C backend -cvzf artifact.tar.gz .
-            cp ~/project/artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/artifact.tar.gz 
-            ls ~/project/.circleci/ansible/roles/deploy/
-      - run:
-          name: Run ansible playbook
-          command: |
-            export TYPEORM_MIGRATIONS_DIR=./migrations
-            export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
-            export TYPEORM_MIGRATIONS=./migrations/*.ts
-            cd .circleci/ansible
+            cd ansible
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml
+            ansible-playbook -i inventory.txt deploy-backend.yml
       # - destroy-environment:
       #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
       # - revert-migrations:
       #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
+
+  # deploy-backend:
+  #   <<: *aws-docker-image
+  #   steps:
+  #     - checkout
+  #     - add_ssh_keys:
+  #         fingerprints: 
+  #           - "df:d4:27:43:6f:dc:01:ea:99:ec:ab:03:34:a3:60:38"
+  #     - attach_workspace:
+  #         at: ~/
+  #     - restore_cache:
+  #         keys: [backend-build]
+  #     - run:
+  #         name: Run Install dependencies
+  #         command: |
+  #           sudo apt-get update
+  #           sudo apt install python3 -y
+  #           sudo apt-get install ansible -y
+  #           sudo apt install nodejs
+  #     - run:
+  #         name: npm cmds backend
+  #         command: |
+  #           cd backend
+  #           npm install
+  #           npm run build
+  #     - run:
+  #         name: Zip backend
+  #         command: |
+  #           # Zip the directory
+  #           pwd
+  #           tar -zcvf artifact.tar.gz ~/project/backend/*
+  #           #tar -C backend -cvzf artifact.tar.gz .
+  #           cp ~/project/artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/artifact.tar.gz 
+  #           ls ~/project/.circleci/ansible/roles/deploy/
+  #     - run:
+  #         name: Run ansible playbook
+  #         command: |
+  #           export TYPEORM_MIGRATIONS_DIR=./migrations
+  #           export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
+  #           export TYPEORM_MIGRATIONS=./migrations/*.ts
+  #           cd .circleci/ansible
+  #           echo "Contents  of the inventory.txt file is -------"
+  #           cat inventory.txt
+  #           export ANSIBLE_HOST_KEY_CHECKING=False
+  #           ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml
+  #     # - destroy-environment:
+  #     #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
+  #     # - revert-migrations:
+  #     #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
 
   smoke-test:
     <<: *node-docker-image
@@ -366,9 +426,9 @@ jobs:
             echo $API_URL
             if curl --connect-timeout 5 "${API_URL}/api/status" | grep "ok"
             then
-              exit 0
+              return 0
             else
-              exit 1
+              return 1
             fi
       - run:
           name: Frontend smoke test.
