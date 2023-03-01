@@ -360,7 +360,7 @@ jobs:
   smoke-test:
     <<: *node-docker-image
     steps:
-      - checkout # Checkout code from git
+      - checkout # Checkout code 
       - run:
           name: Install dependencies
           command: |
