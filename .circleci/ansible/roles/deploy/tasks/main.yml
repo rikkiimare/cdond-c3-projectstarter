@@ -21,7 +21,7 @@
     
 - name: "Start backend"
   shell: |
-    /usr/bin/pm2 start /home/ubuntu/backend-app/dist/main.js --name backend -f
+    /usr/bin/pm2 start /home/ubuntu/backend-app/home/circleci/project/backend/dist/main.js --name backend -f
   environment:
     ENVIRONMENT: production
     NODE_ENV: production
