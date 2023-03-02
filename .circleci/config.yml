@@ -400,7 +400,7 @@ jobs:
   cloudfront-update:
     <<: *aws-docker-image
     steps:
-      -checkout # Checkout code from git
+      - checkout # Checkout code from git
       - run:
           name: Identify existing workflow ID
           command: |
