@@ -403,8 +403,6 @@ jobs:
     <<: *aws-docker-image
     steps:
       - checkout # Checkout code from git
-      - attach_workspace:
-          at: ~/
       - run:
           name: Identify existing workflow ID
           command: |
@@ -417,6 +415,11 @@ jobs:
             echo $OldWorkflowID >> ~/OldWorkflowID.txt
             cat ~/OldWorkflowID.txt
             echo STACKS: "$stack_list"
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - OldWorkflowID.txt
+
       - run:
           name: Update cloudfront distribution
           command: |
@@ -445,7 +448,7 @@ jobs:
             cat ~/OldWorkflowID.txt
             OldWorkflowID=$(cat ~/OldWorkflowID.txt)
             echo OldWorkflowID: "${OldWorkflowID}"
-            
+         
             if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
             then
               aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
