@@ -407,14 +407,20 @@ jobs:
             export OldWorkflowID=$(aws cloudformation \
               list-exports --query "Exports[?Name=='WorkflowID'].Value" \
               --output text)
+            export stack_list=$(aws cloudformation list-stacks \
+            --query "StackSummaries[*].StackName" \
+            --stack-status-filter CREATE_COMPLETE --output text)
             echo $OldWorkflowID >> ~/OldWorkflowID.txt
             cat ~/OldWorkflowID.txt
+            echo STACKS: "$stack_list"
       - run:
           name: Update cloudfront distribution
           command: |
             aws cloudformation deploy \
-              --stack-name "InitialStack-${OldWorkflowID}" \
+              --template-file .circleci/files/cloudfront.yml \
+              --stack-name "InitialStack" \
               --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --region us-east-1 \
               --tags project=udapeople
             echo OldWorkflowID: "${OldWorkflowID}"
             echo Current Workflow ID: "${CIRCLE_WORKFLOW_ID:0:7}"
