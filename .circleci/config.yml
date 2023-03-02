@@ -403,6 +403,8 @@ jobs:
     <<: *aws-docker-image
     steps:
       - checkout # Checkout code from git
+      - attach_workspace:
+          at: ~/
       - run:
           name: Identify existing workflow ID
           command: |
@@ -434,17 +436,17 @@ jobs:
     <<: *aws-docker-image
     steps:
       - checkout # Checkout code from git
+      - attach_workspace:
+          at: ~/
       - run:
           name: Get old stack workflow id
           command: |
             # your code here
-            export OldWorkflowID=$(aws cloudformation \
-              list-exports --query "Exports[?Name=='WorkflowID'].Value" --no-paginate \
-              --output text)
-            export STACKS=$(aws cloudformation list-stacks \
-            --query "StackSummaries[*].StackName" \
-            --stack-status-filter CREATE_COMPLETE --output text)
-            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+            cat ~/OldWorkflowID.txt
+            OldWorkflowID=$(cat ~/OldWorkflowID.txt)
+            echo OldWorkflowID: "${OldWorkflowID}"
+            
+            if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
             then
               aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
               aws cloudformation delete-stack --stack-name "udacity-frontend-${OldWorkflowID}"
