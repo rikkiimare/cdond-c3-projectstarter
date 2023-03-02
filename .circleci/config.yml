@@ -448,12 +448,12 @@ jobs:
             cat ~/OldWorkflowID.txt
             OldWorkflowID=$(cat ~/OldWorkflowID.txt)
             echo OldWorkflowID: "${OldWorkflowID}"
-            echo New Workflow Id: "${CIRCLE_WORKFLOW_ID}"         
+            echo New Workflow Id: "${CIRCLE_WORKFLOW_ID:0:7}"         
             if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
             then
-              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
-              aws cloudformation delete-stack --stack-name "udacity-frontend-${OldWorkflowID}"
-              aws cloudformation delete-stack --stack-name "udacity-backend-${OldWorkflowID}"
+              aws s3 rm "s3://${OldWorkflowID}" --recursive
+              aws cloudformation delete-stack --stack-name "udacity-frontend-${OldWorkflowID:10:17}"
+              aws cloudformation delete-stack --stack-name "udacity-backend-${OldWorkflowID:10:17}"
             fi
 
 workflows:
