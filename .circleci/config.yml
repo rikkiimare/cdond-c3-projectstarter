@@ -194,11 +194,6 @@ jobs:
             - "df:d4:27:43:6f:dc:01:ea:99:ec:ab:03:34:a3:60:38"
       - attach_workspace:      # attach workspace
           at: ~/
-      # - run:
-      #     name: Install dependencies
-      #     command: |
-      #       # Your code here
-      #       exit 1
       - run:
           name: Configure server
           command: |
@@ -217,7 +212,6 @@ jobs:
             cat .env
             cd ..
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
-            - run:
       - run:
           name: Setup Prometheus Node Exporter
           command: |
