@@ -1,8 +1,11 @@
 URL01:
 https://github.com/rikkiimare/cdond-c3-projectstarter
 
+CircleCi URL
+https://app.circleci.com/pipelines/github/rikkiimare/cdond-c3-projectstarter
+
 URL02:
-http://udapeople-81f9bd6.s3-website-us-east-1.amazonaws.com
+http://udapeople-3251c82.s3-website-us-east-1.amazonaws.com
 Get from the bottom of the properties tab.
 
 URL03:
