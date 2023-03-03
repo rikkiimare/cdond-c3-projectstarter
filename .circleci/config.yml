@@ -217,6 +217,13 @@ jobs:
             cat .env
             cd ..
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
+            - run:
+      - run:
+          name: Setup Prometheus Node Exporter
+          command: |
+            cd .circleci/ansible
+            cat inventory.txt
+            ansible-playbook -i inventory.txt node-exporter.yml
       - persist_to_workspace:
           root: ~/
           paths:
@@ -456,34 +463,6 @@ jobs:
               aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID:10:17}"
             fi
 
-  add-prometheus-node-exporter:
-    <<: *ansible-docker-image
-    steps:
-      - checkout
-      - add_ssh_keys:
-          fingerprints: 
-            - "df:d4:27:43:6f:dc:01:ea:99:ec:ab:03:34:a3:60:38"
-      - attach_workspace:      # attach workspace
-          at: ~/
-      - run:
-          name: Install dependancies
-          command: |
-            sudo apt update || true
-            sudo apt install nodejs
-            sudo apt install npm
-            node --version
-            npm --version
-      - run:
-          name: Setup Prometheus Node Exporter
-          command: |
-            cd .circleci/ansible
-            cat inventory.txt
-            ansible-playbook -i inventory.txt node-exporter.yml
-      - destroy-environment:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
-      - revert-migrations:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}   
-
 workflows:
   default:
     jobs:
@@ -506,15 +485,13 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
-      - add-prometheus-node-exporter:
-          requires: [run-migrations]
       - deploy-frontend:
-          requires: [add-prometheus-node-exporter]
+          requires: [run-migrations]
       - deploy-backend:
-          requires: [add-prometheus-node-exporter]
+          requires: [run-migrations]
       - smoke-test:
           requires: [deploy-backend, deploy-frontend]
       - cloudfront-update:
-         requires: [smoke-test]
+          requires: [smoke-test]
       - cleanup:
           requires: [cloudfront-update]
