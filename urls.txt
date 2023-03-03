@@ -6,7 +6,7 @@ http://udapeople-81f9bd6.s3-website-us-east-1.amazonaws.com
 Get from the bottom of the properties tab.
 
 URL03:
-
+http://d3886e49ba66hv.cloudfront.net/#/employees
 
 URL04:
-
+http://3.86.189.126:3030/api/status
